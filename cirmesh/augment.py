@@ -729,7 +729,6 @@ def scarCreating(mesh, path, directory):
     """
         scarCreating
     """
-    trimesh.smoothing.filter_laplacian(mesh,0.8,3)
     list_face_of_vertice = func_ListFaceOfVertice(mesh)
     limitY_min, limitY_max = func_EyeSpace(mesh.vertices)
     list_index_face = []
