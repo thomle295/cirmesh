@@ -42,7 +42,7 @@ class CIRmesh(Trimesh):
         
         return False
 
-    def createScar(mesh, path, directory):
+    def createScar(self, mesh, path, directory):
         """
             createScar
         """
