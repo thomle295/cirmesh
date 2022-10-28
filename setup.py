@@ -14,7 +14,7 @@ setup(
     description='basic',
     long_description=README,
     long_description_content_type="text/markdown",
-    # url="https://github.com/thomle295/glaring_simulation",
+    url="https://github.com/thomle295/cirmesh",
     author='ThomLe',
     author_email="thomlestudy295@gmail.com",
     classifiers=[
