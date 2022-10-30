@@ -781,7 +781,7 @@ def func_FrontFace(mesh):
 def removedup(x):
   return list(dict.fromkeys(x))
 
-def circleScar(mesh, path, list_face_of_vertice, limitY_min, limitY_max):
+def circleScar(mesh, path, list_face_of_vertice, limitY_min, limitY_max, index):
     mesh_pre = mesh.copy()
 
     #danh sách index face sẽ lấy random
@@ -829,8 +829,9 @@ def circleScar(mesh, path, list_face_of_vertice, limitY_min, limitY_max):
                 mesh_pre.vertices[idx_ver][2] =  mesh_pre.vertices[idx_ver][2] + _inc_Z*(sm - i)/sm
             else:
                 mesh_pre.vertices[idx_ver][2] =  mesh_pre.vertices[idx_ver][2] - _inc_Z*(sm - i)/sm
-    mesh_pre.export(path)
-    return mesh_pre
+    newpath = path + "_" + str(index) + ".obj"
+    mesh_pre.export(newpath)
+    # return mesh_pre
 
 
 def scarCreatingV2(mesh, path, numGenCirScar=10):
@@ -841,8 +842,8 @@ def scarCreatingV2(mesh, path, numGenCirScar=10):
     limitY_min, limitY_max = func_EyeSpace(mesh.vertices)
     
     _ = [
-        circleScar(mesh, path, list_face_of_vertice, limitY_min, limitY_max)
-        for _ in range(numGenCirScar)
+        circleScar(mesh, path, list_face_of_vertice, limitY_min, limitY_max, i)
+        for i in range(numGenCirScar)
         ]
 
     return True
