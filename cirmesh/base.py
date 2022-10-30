@@ -53,6 +53,19 @@ class CIRmesh(Trimesh):
             directory=directory
         )) == True:
             return True
+
+
+    def createScarV2(self, mesh, path, numGenCirScar=10):
+        """
+            createScar
+        """
+
+        if (augment.scarCreatingV2(
+            mesh=mesh,
+            path=path,
+            numGenCirScar=numGenCirScar
+        )) == True:
+            return True
     
 
         

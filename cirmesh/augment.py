@@ -401,7 +401,7 @@ def func_EyeSpace(_vertices):
     minY = min(listY)
     maxY = max(listY)
     midY = (maxY - minY) / 10
-    limitY_min = midY * 6
+    limitY_min = midY * 6.5
     limitY_max = midY * 7
     return (limitY_min, limitY_max)
 
@@ -419,7 +419,7 @@ def func_checkZ(_vertices,_face):
         return False
 
 #hàm kiểm tra Z Vertice của face
-def func_checkY(_vertices,_face, _limitY_min, _limitY_max):
+def func_checkY(_vertices, _face, _limitY_min, _limitY_max):
     """
         func_checkY
     """
@@ -741,3 +741,108 @@ def scarCreating(mesh, path, directory):
 
     return True
     
+###########################
+# Scar Creating Version 2 #
+###########################
+def func_CoordinateAngleTranslation(mesh):
+  listX = []
+  listY = []
+  listZ = []
+  for i in range (0,len(mesh.vertices)):
+      listX.append(mesh.vertices[i][0])
+      listY.append(mesh.vertices[i][1])
+      listZ.append(mesh.vertices[i][2])
+      
+  minX = min(listX)
+  minY = min(listY)
+  minZ = min(listZ)
+  
+  for i in range (0,len(mesh.vertices)):
+      mesh.vertices[i][0] = mesh.vertices[i][0] - minX
+      mesh.vertices[i][1] = mesh.vertices[i][1] - minY
+      mesh.vertices[i][2] = mesh.vertices[i][2] - minZ
+  return mesh
+
+# truyền vào mesh (file obj)
+# trả về mesh mà mặt trước của khuôn mặt nằm ở trục dương của hệ trục tọa độ descartes
+def func_FrontFace(mesh):
+  listY = []
+  for i in range (0,len(mesh.vertices)):
+      listY.append([mesh.vertices[i][1], i])
+      
+  #sắp xếp theo thứ tự tăng dần của Y
+  sorted_listY = sorted(listY, reverse=False, key=take_first)
+  #giá trị Z sẽ trừ đi để lấy phần trước của mặt
+  maxZ = mesh.vertices[sorted_listY[0][1]][2]
+  for i in range (0,len(mesh.vertices)):
+      mesh.vertices[i][2] = mesh.vertices[i][2] - maxZ
+  return mesh
+
+def removedup(x):
+  return list(dict.fromkeys(x))
+
+def circleScar(mesh, path, list_face_of_vertice, limitY_min, limitY_max):
+    mesh_pre = mesh.copy()
+
+    #danh sách index face sẽ lấy random
+    list_index_face = []
+    for i in range(0, len(mesh_pre.faces)):
+        if func_checkZ(mesh_pre.vertices,mesh_pre.faces[i]):
+            if func_checkY(mesh_pre.vertices,mesh_pre.faces[i], limitY_min, limitY_max):
+                list_index_face.append(i)
+    index_Face_begin = np.random.choice(list_index_face)
+    min_num_point = int(len(list_index_face)/100)
+    max_num_point = int(len(list_index_face)/20)
+    num_vertices_pick = np.random.randint(min_num_point,max_num_point)
+    lst_vertices_picked = []
+    lst_vertices_picked.append(mesh_pre.faces[index_Face_begin][0])
+    lst_vertices_picked.append(mesh_pre.faces[index_Face_begin][1])
+    lst_vertices_picked.append(mesh_pre.faces[index_Face_begin][2])
+    _tmp_ver_pkd = []
+    _tmp_ver_pkd.append(  lst_vertices_picked.copy())
+    while(len(lst_vertices_picked) < num_vertices_pick):
+        _tmp_ver = []
+        for idx_ver in _tmp_ver_pkd[-1]:
+            lst_face_of_ver = list_face_of_vertice[idx_ver]
+            
+            for idx_f in lst_face_of_ver:
+                _tmp_ver.append(mesh_pre.faces[idx_f][0])
+                _tmp_ver.append(mesh_pre.faces[idx_f][1])
+                _tmp_ver.append(mesh_pre.faces[idx_f][2])
+        _tmp_ver = removedup(_tmp_ver)
+        idx_w = 0
+        while idx_w < len(_tmp_ver):
+            if _tmp_ver[idx_w] in  lst_vertices_picked:
+                _tmp_ver.pop(idx_w)
+            else:
+                lst_vertices_picked.append(_tmp_ver[idx_w])
+                idx_w = idx_w+1
+        _tmp_ver_pkd.append(_tmp_ver)
+
+    # mesh_pre1 = mesh_pre.copy()
+    _inc_Z = np.random.randint(4,12)
+    llZ = np.random.randint(0,2)
+    sm = len(_tmp_ver_pkd)
+    for i in range(sm):
+        for idx_ver in _tmp_ver_pkd[i]:
+            if llZ == 0:
+                mesh_pre.vertices[idx_ver][2] =  mesh_pre.vertices[idx_ver][2] + _inc_Z*(sm - i)/sm
+            else:
+                mesh_pre.vertices[idx_ver][2] =  mesh_pre.vertices[idx_ver][2] - _inc_Z*(sm - i)/sm
+    mesh_pre.export(path)
+    return mesh_pre
+
+
+def scarCreatingV2(mesh, path, numGenCirScar=10):
+    """
+        scarCreating
+    """
+    list_face_of_vertice = func_ListFaceOfVertice(mesh)
+    limitY_min, limitY_max = func_EyeSpace(mesh.vertices)
+    
+    _ = [
+        circleScar(mesh, path, list_face_of_vertice, limitY_min, limitY_max)
+        for _ in range(numGenCirScar)
+        ]
+
+    return True
